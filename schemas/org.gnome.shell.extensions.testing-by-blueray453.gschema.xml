@@ -1,0 +1,91 @@
+<schemalist>
+  <schema id="org.gnome.shell.extensions.define-keybindings-by-blueray453"
+          path="/org/gnome/shell/extensions/define-keybindings-by-blueray453/">
+
+    <key name="kb-1" type="as">
+      <default>[]</default>
+      <summary>Super+grave</summary>
+    </key>
+
+    <key name="kb-2" type="as">
+      <default>[]</default>
+      <summary>Super+a</summary>
+    </key>
+
+    <key name="kb-3" type="as">
+      <default>[]</default>
+      <summary>Super+n</summary>
+    </key>
+
+    <key name="kb-4" type="as">
+      <default>[]</default>
+      <summary>Super+f</summary>
+    </key>
+
+    <key name="kb-5" type="as">
+      <default>[]</default>
+      <summary>Super+c</summary>
+    </key>
+
+    <key name="kb-6" type="as">
+      <default>[]</default>
+      <summary>Super+b</summary>
+    </key>
+
+    <key name="kb-7" type="as">
+      <default>[]</default>
+      <summary>Super+v</summary>
+    </key>
+
+    <key name="kb-8" type="as">
+      <default>[]</default>
+      <summary>Super+r</summary>
+    </key>
+
+    <key name="kb-9" type="as">
+      <default>[]</default>
+      <summary>Super+m</summary>
+    </key>
+
+    <key name="kb-10" type="as">
+      <default>[]</default>
+      <summary>Super+w</summary>
+    </key>
+
+    <key name="kb-11" type="as">
+      <default>[]</default>
+      <summary>Super+Delete</summary>
+    </key>
+
+    <key name="kb-12" type="as">
+      <default>[]</default>
+      <summary>Super+o</summary>
+    </key>
+
+    <key name="kb-13" type="as">
+      <default>[]</default>
+      <summary>Super+q</summary>
+    </key>
+
+    <key name="kb-14" type="as">
+      <default>[]</default>
+      <summary>Print</summary>
+    </key>
+
+    <key name="kb-15" type="as">
+      <default>[]</default>
+      <summary>Super+p</summary>
+    </key>
+
+    <key name="kb-16" type="as">
+      <default>[]</default>
+      <summary>Super+Tab</summary>
+    </key>
+
+    <key name="kb-17" type="as">
+      <default>[]</default>
+      <summary>Super+x</summary>
+    </key>
+
+  </schema>
+</schemalist>

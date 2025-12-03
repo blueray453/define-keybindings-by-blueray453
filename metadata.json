@@ -1,0 +1,12 @@
+{
+  "uuid": "define-keybindings-by-blueray453",
+  "name": "define-keybindings-by-blueray453",
+  "description": "Define my keybindings.",
+  "version": 1,
+  "shell-version": [
+    "48",
+    "49"
+  ],
+  "url": "https://github.com/blueray453/define-keybindings-by-blueray453",
+  "settings-schema": "org.gnome.shell.extensions.define-keybindings-by-blueray453"
+}
