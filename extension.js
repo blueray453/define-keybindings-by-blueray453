@@ -40,7 +40,7 @@ export default class ExampleExtension extends Extension {
 
     // Map key names → actual accelerators and commands
     this._bindings = {
-      'kb-1': { accel: '<Super>grave', command: 'align-windows' },
+      'kb-1': { accel: '<Super>grave', command: 'gnomeutils-call --interface windows AlignWindowsOfFocusedWindowWMClass' },
       'kb-2': { accel: '<Super>a', command: 'alacritty-keybinding' },
       'kb-3': { accel: '<Super>n', command: 'nemo-keybinding' },
       'kb-4': { accel: '<Super>f', command: 'fsearch-keybinding' },
@@ -48,14 +48,14 @@ export default class ExampleExtension extends Extension {
       'kb-6': { accel: '<Super>b', command: 'firefox-keybinding' },
       'kb-7': { accel: '<Super>v', command: 'multimedia-keybinding' },
       'kb-8': { accel: '<Super>r', command: 'books-keybinding' },
-      'kb-9': { accel: '<Super>m', command: 'toggle-mark-windows' },
+      'kb-9': { accel: '<Super>m', command: 'gnomeutils-call -i tagged ToggleMarksFocusedWindow' },
       'kb-10': { accel: '<Super>w', command: 'gdmenu-activity-overview' },
-      'kb-11': { accel: '<Super>Delete', command: 'close-other-windows' },
+      'kb-11': { accel: '<Super>Delete', command: 'gnomeutils-call --interface tagged CloseOtherNotMarkedWindowsCurrentWorkspaceOfFocusedWindowWMClass' },
       'kb-12': { accel: '<Super>o', command: 'open-file-path' },
       'kb-13': { accel: '<Super>q', command: 'capture2text' },
       'kb-14': { accel: 'Print', command: 'gdmenu-screenshot' },
-      'kb-15': { accel: '<Super>p', command: 'toggle-pin-windows' },
-      'kb-16': { accel: '<Super>Tab', command: 'toggle-workspace' },
+      'kb-15': { accel: '<Super>p', command: 'gnomeutils-call -i tagged TogglePinsFocusedWindow' },
+      'kb-16': { accel: '<Super>Tab', command: 'gnomeutils-call -i workspaces ToggleWorkspaces' },
       'kb-17': { accel: '<Super>x', command: 'move-all-windows-to-respective-workspaces' }
     };
 
