@@ -9,6 +9,7 @@ import { setLogging, setLogFn, journal } from './utils.js';
 
 export default class ExampleExtension extends Extension {
   enable() {
+    // --- Logging setup ---
     setLogFn((msg, error = false) => {
       let level;
       if (error) {
@@ -26,7 +27,6 @@ export default class ExampleExtension extends Extension {
         }
       );
     });
-
     setLogging(true);
 
     // journalctl -f -o cat SYSLOG_IDENTIFIER=define-keybindings-by-blueray453
@@ -37,8 +37,10 @@ export default class ExampleExtension extends Extension {
       'org.gnome.shell.extensions.define-keybindings-by-blueray453'
     );
 
-    // --- Block the original overlay-key handler ---
-    // Find the original handler's ID (the one that toggles the overview)
+    // --- NEW: Hide overview at startup (simple & safe) ---
+    this._NoOverviewAtStartUp();
+
+    // --- Super key handling: block original, connect custom ---
     this._originalOverlayHandlerId = GObject.signal_handler_find(
       global.display,
       { signalId: 'overlay-key' }
@@ -46,16 +48,14 @@ export default class ExampleExtension extends Extension {
     if (this._originalOverlayHandlerId !== null) {
       global.display.block_signal_handler(this._originalOverlayHandlerId);
       journal(`Blocked original overlay-key handler (ID: ${this._originalOverlayHandlerId})`);
-    } else {
-      journal('No original overlay-key handler found?');
     }
 
-    // --- Connect our own handler ---
     this._overlayKeyHandlerId = global.display.connect('overlay-key', () => {
       this._onSuperKeyPressed();
     });
     journal(`Connected custom overlay-key handler (ID: ${this._overlayKeyHandlerId})`);
 
+    // --- Your existing 17 keybindings (kb-18 removed) ---
     this._bindings = {
       'kb-1': { accel: '<Super>grave', command: 'gnomeutils-call --interface windows AlignWindowsOfFocusedWindowWMClass' },
       'kb-2': { accel: '<Super>a', command: 'alacritty-keybinding' },
@@ -88,6 +88,16 @@ export default class ExampleExtension extends Extension {
     }
   }
 
+  // --- Hide overview on startup (one-shot) ---
+  _NoOverviewAtStartUp() {
+    // Run with high priority so it hides before the overview fully opens
+    GLib.idle_add(GLib.PRIORITY_HIGH, () => {
+      Main.overview.hide();
+      return GLib.SOURCE_REMOVE; // run only once
+    });
+    journal('Scheduled overview hide at startup.');
+  }
+
   // --- Handler for the bare Super key ---
   _onSuperKeyPressed() {
     journal('Super key pressed (bare) - executing gdmenu --drun');
@@ -114,14 +124,12 @@ export default class ExampleExtension extends Extension {
   }
 
   disable() {
-    // --- Unblock the original handler ---
+    // --- Clean up Super key handling ---
     if (this._originalOverlayHandlerId !== null) {
       global.display.unblock_signal_handler(this._originalOverlayHandlerId);
-      journal(`Unblocked original overlay-key handler (ID: ${this._originalOverlayHandlerId})`);
       this._originalOverlayHandlerId = null;
+      journal('Unblocked original overlay-key handler');
     }
-
-    // --- Disconnect our own handler ---
     if (this._overlayKeyHandlerId !== null) {
       global.display.disconnect(this._overlayKeyHandlerId);
       this._overlayKeyHandlerId = null;
