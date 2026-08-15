@@ -58,13 +58,13 @@ export default class ExampleExtension extends Extension {
     // --- Your existing 17 keybindings (kb-18 removed) ---
     this._bindings = {
       'kb-1': { accel: '<Super>grave', command: 'gnomeutils-call --interface windows AlignWindowsOfFocusedWindowWMClass' },
-      'kb-2': { accel: '<Super>a', command: 'alacritty-keybinding' },
-      'kb-3': { accel: '<Super>n', command: 'nemo-keybinding' },
-      'kb-4': { accel: '<Super>f', command: 'fsearch-keybinding' },
-      'kb-5': { accel: '<Super>c', command: 'codium-keybinding' },
-      'kb-6': { accel: '<Super>b', command: 'firefox-keybinding' },
-      'kb-7': { accel: '<Super>v', command: 'multimedia-keybinding' },
-      'kb-8': { accel: '<Super>r', command: 'books-keybinding' },
+      'kb-2': { accel: '<Super>a', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 0' },
+      'kb-3': { accel: '<Super>n', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 1' },
+      'kb-4': { accel: '<Super>f', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 2' },
+      'kb-5': { accel: '<Super>c', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 3' },
+      'kb-6': { accel: '<Super>b', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 4' },
+      'kb-7': { accel: '<Super>v', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 5' },
+      'kb-8': { accel: '<Super>r', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 6' },
       'kb-9': { accel: '<Super>m', command: 'gnomeutils-call -i tagged ToggleMarksFocusedWindow' },
       'kb-10': { accel: '<Super>w', command: 'gdmenu-activity-overview' },
       'kb-11': { accel: '<Super>Delete', command: 'gnomeutils-call --interface tagged CloseOtherNotMarkedWindowsCurrentWorkspaceOfFocusedWindowWMClass' },
@@ -73,7 +73,7 @@ export default class ExampleExtension extends Extension {
       'kb-14': { accel: 'Print', command: 'gdmenu-screenshot' },
       'kb-15': { accel: '<Super>p', command: 'gnomeutils-call -i tagged TogglePinsFocusedWindow' },
       'kb-16': { accel: '<Super>Tab', command: 'gnomeutils-call -i workspaces ToggleWorkspaces' },
-      'kb-17': { accel: '<Super>x', command: 'move-all-windows-to-respective-workspaces' }
+      'kb-17': { accel: '<Super>x', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 7' }
     };
 
     for (const [name, { accel }] of Object.entries(this._bindings)) {
