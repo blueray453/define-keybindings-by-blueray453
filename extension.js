@@ -65,15 +65,15 @@ export default class ExampleExtension extends Extension {
       'kb-6': { accel: '<Super>b', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 4' },
       'kb-7': { accel: '<Super>v', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 5' },
       'kb-8': { accel: '<Super>r', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 6' },
-      'kb-9': { accel: '<Super>m', command: 'gnomeutils-call -i tagged ToggleMarksFocusedWindow' },
-      'kb-10': { accel: '<Super>w', command: 'gdmenu-activity-overview' },
-      'kb-11': { accel: '<Super>Delete', command: 'gnomeutils-call --interface tagged CloseOtherNotMarkedWindowsCurrentWorkspaceOfFocusedWindowWMClass' },
-      'kb-12': { accel: '<Super>o', command: 'open-file-path' },
-      'kb-13': { accel: '<Super>q', command: 'capture2text' },
+      'kb-9': { accel: '<Super>x', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 7' },
+      'kb-10': { accel: '<Super>Delete', command: 'gnomeutils-call --interface tagged CloseOtherNotMarkedWindowsCurrentWorkspaceOfFocusedWindowWMClass' },
+      'kb-11': { accel: '<Super>m', command: 'gnomeutils-call -i tagged ToggleMarksFocusedWindow' },
+      'kb-12': { accel: '<Super>p', command: 'gnomeutils-call -i tagged TogglePinsFocusedWindow' },
+      'kb-13': { accel: '<Super>Tab', command: 'gnomeutils-call -i workspaces ToggleWorkspaces' },
       'kb-14': { accel: 'Print', command: 'gdmenu-screenshot' },
-      'kb-15': { accel: '<Super>p', command: 'gnomeutils-call -i tagged TogglePinsFocusedWindow' },
-      'kb-16': { accel: '<Super>Tab', command: 'gnomeutils-call -i workspaces ToggleWorkspaces' },
-      'kb-17': { accel: '<Super>x', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 7' }
+      'kb-15': { accel: '<Super>w', command: 'gdmenu-activity-overview' },
+      'kb-16': { accel: '<Super>o', command: 'open-file-path' },
+      'kb-17': { accel: '<Super>q', command: 'capture2text' },
     };
 
     for (const [name, { accel }] of Object.entries(this._bindings)) {
