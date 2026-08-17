@@ -50,9 +50,9 @@ export default class ExampleExtension extends Extension {
       journal(`Blocked original overlay-key handler (ID: ${this._originalOverlayHandlerId})`);
     }
 
-    this._overlayKeyHandlerId = global.display.connect('overlay-key', () => {
-      this._onSuperKeyPressed();
-    });
+    // this._overlayKeyHandlerId = global.display.connect('overlay-key', () => {
+    //   this._onSuperKeyPressed();
+    // });
     journal(`Connected custom overlay-key handler (ID: ${this._overlayKeyHandlerId})`);
 
     // --- Your existing 17 keybindings (kb-18 removed) ---
