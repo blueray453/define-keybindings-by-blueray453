@@ -37,23 +37,9 @@ export default class ExampleExtension extends Extension {
       'org.gnome.shell.extensions.define-keybindings-by-blueray453'
     );
 
-    // --- NEW: Hide overview at startup (simple & safe) ---
     this._NoOverviewAtStartUp();
-
-    // --- Super key handling: block original, connect custom ---
-    this._originalOverlayHandlerId = GObject.signal_handler_find(
-      global.display,
-      { signalId: 'overlay-key' }
-    );
-    if (this._originalOverlayHandlerId !== null) {
-      global.display.block_signal_handler(this._originalOverlayHandlerId);
-      journal(`Blocked original overlay-key handler (ID: ${this._originalOverlayHandlerId})`);
-    }
-
-    // this._overlayKeyHandlerId = global.display.connect('overlay-key', () => {
-    //   this._onSuperKeyPressed();
-    // });
-    journal(`Connected custom overlay-key handler (ID: ${this._overlayKeyHandlerId})`);
+    this._blockOriginalOverlayHandler();
+    // this._connectCustomOverlayHandler();
 
     // --- Your existing 17 keybindings (kb-18 removed) ---
     this._bindings = {
@@ -98,6 +84,31 @@ export default class ExampleExtension extends Extension {
     journal('Scheduled overview hide at startup.');
   }
 
+  // --- Block the original overlay-key handler ---
+  _blockOriginalOverlayHandler() {
+    this._originalOverlayHandlerId = GObject.signal_handler_find(
+      global.display,
+      { signalId: 'overlay-key' }
+    );
+    if (this._originalOverlayHandlerId !== null) {
+      global.display.block_signal_handler(this._originalOverlayHandlerId);
+      journal(`Blocked original overlay-key handler (ID: ${this._originalOverlayHandlerId})`);
+    } else {
+      journal('No original overlay-key handler found to block.');
+    }
+  }
+
+  // --- Connect custom overlay-key handler (always blocks original first) ---
+  _connectCustomOverlayHandler() {
+    // Block the original handler before connecting our own
+    this._blockOriginalOverlayHandler();
+
+    this._overlayKeyHandlerId = global.display.connect('overlay-key', () => {
+      this._onSuperKeyPressed();
+    });
+    journal(`Connected custom overlay-key handler (ID: ${this._overlayKeyHandlerId})`);
+  }
+
   // --- Handler for the bare Super key ---
   _onSuperKeyPressed() {
     journal('Super key pressed (bare) - executing gdmenu --drun');
@@ -108,6 +119,20 @@ export default class ExampleExtension extends Extension {
       GLib.spawn_command_line_async('gdmenu --drun');
     } catch (e) {
       journal(`Failed to run gdmenu: ${e}`, true);
+    }
+  }
+
+  // --- Disconnect custom handler and unblock original ---
+  _disconnectCustomOverlayHandler() {
+    if (this._overlayKeyHandlerId !== null) {
+      global.display.disconnect(this._overlayKeyHandlerId);
+      this._overlayKeyHandlerId = null;
+      journal('Disconnected custom overlay-key handler');
+    }
+    if (this._originalOverlayHandlerId !== null) {
+      global.display.unblock_signal_handler(this._originalOverlayHandlerId);
+      this._originalOverlayHandlerId = null;
+      journal('Unblocked original overlay-key handler');
     }
   }
 
@@ -124,19 +149,9 @@ export default class ExampleExtension extends Extension {
   }
 
   disable() {
-    // --- Clean up Super key handling ---
-    if (this._originalOverlayHandlerId !== null) {
-      global.display.unblock_signal_handler(this._originalOverlayHandlerId);
-      this._originalOverlayHandlerId = null;
-      journal('Unblocked original overlay-key handler');
-    }
-    if (this._overlayKeyHandlerId !== null) {
-      global.display.disconnect(this._overlayKeyHandlerId);
-      this._overlayKeyHandlerId = null;
-      journal('Disconnected custom overlay-key handler');
-    }
 
-    // --- Clean up regular keybindings ---
+    this._disconnectCustomOverlayHandler();
+
     if (!this._bindings) return;
     for (const name of Object.keys(this._bindings)) {
       Main.wm.removeKeybinding(name);
