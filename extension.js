@@ -5,31 +5,16 @@ import GObject from 'gi://GObject';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-import { setLogging, setLogFn, journal } from './utils.js';
+import {
+  initLogging,
+  createLogger,
+} from './logger.js';
+
+const journal = createLogger(import.meta.url);
 
 export default class ExampleExtension extends Extension {
   enable() {
-    // --- Logging setup ---
-    setLogFn((msg, error = false) => {
-      let level;
-      if (error) {
-        level = GLib.LogLevelFlags.LEVEL_CRITICAL;
-      } else {
-        level = GLib.LogLevelFlags.LEVEL_MESSAGE;
-      }
-      GLib.log_structured(
-        'define-keybindings-by-blueray453',
-        level,
-        {
-          MESSAGE: `${msg}`,
-          SYSLOG_IDENTIFIER: 'define-keybindings-by-blueray453',
-          CODE_FILE: GLib.filename_from_uri(import.meta.url)[0]
-        }
-      );
-    });
-    setLogging(true);
-
-    // journalctl -f -o cat SYSLOG_IDENTIFIER=define-keybindings-by-blueray453
+    initLogging(this.uuid, 'both', false);
     journal(`Enabled`);
 
     // --- Load settings for your keybindings ---
