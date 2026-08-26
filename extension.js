@@ -54,19 +54,6 @@ export default class ExampleExtension extends Extension {
     }
   }
 
-  // --- Handler for the bare Super key ---
-  _onSuperKeyPressed() {
-    journal('Super key pressed (bare) - executing gdmenu --drun');
-    if (Main.overview.visibleTarget) {
-      Main.overview.hide();
-    }
-    try {
-      GLib.spawn_command_line_async('gdmenu --drun');
-    } catch (e) {
-      journal(`Failed to run gdmenu: ${e}`, true);
-    }
-  }
-
   // --- Handler for your regular keybindings ---
   _onKeyPress(name) {
     const entry = this._bindings[name];
