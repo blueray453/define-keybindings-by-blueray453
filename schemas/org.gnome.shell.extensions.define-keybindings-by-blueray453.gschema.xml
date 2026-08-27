@@ -4,87 +4,71 @@
 
     <key name="kb-1" type="as">
       <default>[]</default>
-      <summary>Super+grave</summary>
+      <summary>Keybinding 1</summary>
     </key>
-
     <key name="kb-2" type="as">
       <default>[]</default>
-      <summary>Super+a</summary>
+      <summary>Keybinding 2</summary>
     </key>
-
     <key name="kb-3" type="as">
       <default>[]</default>
-      <summary>Super+n</summary>
+      <summary>Keybinding 3</summary>
     </key>
-
     <key name="kb-4" type="as">
       <default>[]</default>
-      <summary>Super+f</summary>
+      <summary>Keybinding 4</summary>
     </key>
-
     <key name="kb-5" type="as">
       <default>[]</default>
-      <summary>Super+c</summary>
+      <summary>Keybinding 5</summary>
     </key>
-
     <key name="kb-6" type="as">
       <default>[]</default>
-      <summary>Super+b</summary>
+      <summary>Keybinding 6</summary>
     </key>
-
     <key name="kb-7" type="as">
       <default>[]</default>
-      <summary>Super+v</summary>
+      <summary>Keybinding 7</summary>
     </key>
-
     <key name="kb-8" type="as">
       <default>[]</default>
-      <summary>Super+r</summary>
+      <summary>Keybinding 8</summary>
     </key>
-
     <key name="kb-9" type="as">
       <default>[]</default>
-      <summary>Super+m</summary>
+      <summary>Keybinding 9</summary>
     </key>
-
     <key name="kb-10" type="as">
       <default>[]</default>
-      <summary>Super+w</summary>
+      <summary>Keybinding 10</summary>
     </key>
-
     <key name="kb-11" type="as">
       <default>[]</default>
-      <summary>Super+Delete</summary>
+      <summary>Keybinding 11</summary>
     </key>
-
     <key name="kb-12" type="as">
       <default>[]</default>
-      <summary>Super+o</summary>
+      <summary>Keybinding 12</summary>
     </key>
-
     <key name="kb-13" type="as">
       <default>[]</default>
-      <summary>Super+q</summary>
+      <summary>Keybinding 13</summary>
     </key>
-
     <key name="kb-14" type="as">
       <default>[]</default>
-      <summary>Print</summary>
+      <summary>Keybinding 14</summary>
     </key>
-
     <key name="kb-15" type="as">
       <default>[]</default>
-      <summary>Super+p</summary>
+      <summary>Keybinding 15</summary>
     </key>
-
     <key name="kb-16" type="as">
       <default>[]</default>
-      <summary>Super+Tab</summary>
+      <summary>Keybinding 16</summary>
     </key>
-
     <key name="kb-17" type="as">
       <default>[]</default>
-      <summary>Super+x</summary>
+      <summary>Keybinding 17</summary>
     </key>
 
   </schema>
