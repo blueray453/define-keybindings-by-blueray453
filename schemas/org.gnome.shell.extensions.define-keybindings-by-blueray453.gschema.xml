@@ -2,74 +2,59 @@
   <schema id="org.gnome.shell.extensions.define-keybindings-by-blueray453"
           path="/org/gnome/shell/extensions/define-keybindings-by-blueray453/">
 
-    <key name="kb-1" type="as">
-      <default>[]</default>
-      <summary>Keybinding 1</summary>
+    <!-- Single source of truth: JSON array of
+         {id, description, command, accel, slot}. Edited entirely
+         through prefs.js — add/remove/edit all go through this one key. -->
+    <key name="keybinding-definitions" type="s">
+      <default>'[]'</default>
+      <summary>JSON array of keybinding definitions</summary>
     </key>
-    <key name="kb-2" type="as">
-      <default>[]</default>
-      <summary>Keybinding 2</summary>
-    </key>
-    <key name="kb-3" type="as">
-      <default>[]</default>
-      <summary>Keybinding 3</summary>
-    </key>
-    <key name="kb-4" type="as">
-      <default>[]</default>
-      <summary>Keybinding 4</summary>
-    </key>
-    <key name="kb-5" type="as">
-      <default>[]</default>
-      <summary>Keybinding 5</summary>
-    </key>
-    <key name="kb-6" type="as">
-      <default>[]</default>
-      <summary>Keybinding 6</summary>
-    </key>
-    <key name="kb-7" type="as">
-      <default>[]</default>
-      <summary>Keybinding 7</summary>
-    </key>
-    <key name="kb-8" type="as">
-      <default>[]</default>
-      <summary>Keybinding 8</summary>
-    </key>
-    <key name="kb-9" type="as">
-      <default>[]</default>
-      <summary>Keybinding 9</summary>
-    </key>
-    <key name="kb-10" type="as">
-      <default>[]</default>
-      <summary>Keybinding 10</summary>
-    </key>
-    <key name="kb-11" type="as">
-      <default>[]</default>
-      <summary>Keybinding 11</summary>
-    </key>
-    <key name="kb-12" type="as">
-      <default>[]</default>
-      <summary>Keybinding 12</summary>
-    </key>
-    <key name="kb-13" type="as">
-      <default>[]</default>
-      <summary>Keybinding 13</summary>
-    </key>
-    <key name="kb-14" type="as">
-      <default>[]</default>
-      <summary>Keybinding 14</summary>
-    </key>
-    <key name="kb-15" type="as">
-      <default>[]</default>
-      <summary>Keybinding 15</summary>
-    </key>
-    <key name="kb-16" type="as">
-      <default>[]</default>
-      <summary>Keybinding 16</summary>
-    </key>
-    <key name="kb-17" type="as">
-      <default>[]</default>
-      <summary>Keybinding 17</summary>
-    </key>
+
+    <!-- Fixed pool of real per-shortcut keys. Main.wm.addKeybinding
+         requires an actual `as`-typed GSettings key to bind to — these
+         are purely mechanical plumbing, never edited directly; their
+         values are always derived from keybinding-definitions' `accel`
+         fields. Boilerplate, never touched by hand. -->
+    <key name="slot-0" type="as"><default>[]</default><summary>Slot 0</summary></key>
+    <key name="slot-1" type="as"><default>[]</default><summary>Slot 1</summary></key>
+    <key name="slot-2" type="as"><default>[]</default><summary>Slot 2</summary></key>
+    <key name="slot-3" type="as"><default>[]</default><summary>Slot 3</summary></key>
+    <key name="slot-4" type="as"><default>[]</default><summary>Slot 4</summary></key>
+    <key name="slot-5" type="as"><default>[]</default><summary>Slot 5</summary></key>
+    <key name="slot-6" type="as"><default>[]</default><summary>Slot 6</summary></key>
+    <key name="slot-7" type="as"><default>[]</default><summary>Slot 7</summary></key>
+    <key name="slot-8" type="as"><default>[]</default><summary>Slot 8</summary></key>
+    <key name="slot-9" type="as"><default>[]</default><summary>Slot 9</summary></key>
+    <key name="slot-10" type="as"><default>[]</default><summary>Slot 10</summary></key>
+    <key name="slot-11" type="as"><default>[]</default><summary>Slot 11</summary></key>
+    <key name="slot-12" type="as"><default>[]</default><summary>Slot 12</summary></key>
+    <key name="slot-13" type="as"><default>[]</default><summary>Slot 13</summary></key>
+    <key name="slot-14" type="as"><default>[]</default><summary>Slot 14</summary></key>
+    <key name="slot-15" type="as"><default>[]</default><summary>Slot 15</summary></key>
+    <key name="slot-16" type="as"><default>[]</default><summary>Slot 16</summary></key>
+    <key name="slot-17" type="as"><default>[]</default><summary>Slot 17</summary></key>
+    <key name="slot-18" type="as"><default>[]</default><summary>Slot 18</summary></key>
+    <key name="slot-19" type="as"><default>[]</default><summary>Slot 19</summary></key>
+    <key name="slot-20" type="as"><default>[]</default><summary>Slot 20</summary></key>
+    <key name="slot-21" type="as"><default>[]</default><summary>Slot 21</summary></key>
+    <key name="slot-22" type="as"><default>[]</default><summary>Slot 22</summary></key>
+    <key name="slot-23" type="as"><default>[]</default><summary>Slot 23</summary></key>
+    <key name="slot-24" type="as"><default>[]</default><summary>Slot 24</summary></key>
+    <key name="slot-25" type="as"><default>[]</default><summary>Slot 25</summary></key>
+    <key name="slot-26" type="as"><default>[]</default><summary>Slot 26</summary></key>
+    <key name="slot-27" type="as"><default>[]</default><summary>Slot 27</summary></key>
+    <key name="slot-28" type="as"><default>[]</default><summary>Slot 28</summary></key>
+    <key name="slot-29" type="as"><default>[]</default><summary>Slot 29</summary></key>
+    <key name="slot-30" type="as"><default>[]</default><summary>Slot 30</summary></key>
+    <key name="slot-31" type="as"><default>[]</default><summary>Slot 31</summary></key>
+    <key name="slot-32" type="as"><default>[]</default><summary>Slot 32</summary></key>
+    <key name="slot-33" type="as"><default>[]</default><summary>Slot 33</summary></key>
+    <key name="slot-34" type="as"><default>[]</default><summary>Slot 34</summary></key>
+    <key name="slot-35" type="as"><default>[]</default><summary>Slot 35</summary></key>
+    <key name="slot-36" type="as"><default>[]</default><summary>Slot 36</summary></key>
+    <key name="slot-37" type="as"><default>[]</default><summary>Slot 37</summary></key>
+    <key name="slot-38" type="as"><default>[]</default><summary>Slot 38</summary></key>
+    <key name="slot-39" type="as"><default>[]</default><summary>Slot 39</summary></key>
 
   </schema>
 </schemalist>

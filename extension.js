@@ -4,11 +4,8 @@ import GLib from 'gi://GLib';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-import { KEYBINDINGS } from './keybindingsData.js';
-import {
-  initLogging,
-  createLogger,
-} from './logger.js';
+import { loadDefinitions } from './keybindingsStore.js';
+import { initLogging, createLogger } from './logger.js';
 
 const journal = createLogger(import.meta.url);
 
@@ -21,47 +18,98 @@ export default class ExampleExtension extends Extension {
       'org.gnome.shell.extensions.define-keybindings-by-blueray453'
     );
 
-    // Fast lookup by GSettings key name, used in _onKeyPress below.
-    this._bindingsByKey = new Map(KEYBINDINGS.map(b => [b.key, b]));
+    this._bound = new Map(); // id -> { slot, command }
 
-    for (const { key, accel } of KEYBINDINGS) {
-      // Only seed the default if nothing's been saved yet (schema
-      // defaults are now empty arrays — the real default accelerator
-      // lives only in keybindingsData.js). Never overwrite a value
-      // prefs.js has already set.
-      if (this._settings.get_strv(key).length === 0)
-        this._settings.set_strv(key, [accel]);
+    const definitions = loadDefinitions(this._settings);
+    for (const def of definitions)
+      this._bindOne(def);
 
-      Main.wm.addKeybinding(
-        key,
-        this._settings,
-        Meta.KeyBindingFlags.NONE,
-        Shell.ActionMode.ALL,
-        () => this._onKeyPress(key)
-      );
+    this._definitionsChangedId = this._settings.connect(
+      'changed::keybinding-definitions', () => this._onDefinitionsChanged());
+  }
+
+  _slotName(slot) {
+    return `slot-${slot}`;
+  }
+
+  _bindOne(def) {
+    const slotName = this._slotName(def.slot);
+    this._settings.set_strv(slotName, def.accel ? [def.accel] : []);
+    Main.wm.addKeybinding(
+      slotName,
+      this._settings,
+      Meta.KeyBindingFlags.NONE,
+      Shell.ActionMode.ALL,
+      () => this._onKeyPress(def.id)
+    );
+    this._bound.set(def.id, { slot: def.slot, command: def.command });
+  }
+
+  _unbindOne(id, slot) {
+    Main.wm.removeKeybinding(this._slotName(slot));
+    this._settings.reset(this._slotName(slot));
+    this._bound.delete(id);
+  }
+
+  // Live add/remove/edit — fires whenever prefs.js (or an import) writes
+  // a new definitions array. Diffs against what's currently bound so
+  // only what actually changed gets rebound; no shell reload needed.
+  _onDefinitionsChanged() {
+    const definitions = loadDefinitions(this._settings);
+    const newById = new Map(definitions.map(d => [d.id, d]));
+
+    // Removed
+    for (const [id, { slot }] of [...this._bound]) {
+      if (!newById.has(id))
+        this._unbindOne(id, slot);
+    }
+
+    // Added or changed
+    for (const def of definitions) {
+      const existing = this._bound.get(def.id);
+      if (!existing) {
+        this._bindOne(def);
+        continue;
+      }
+      if (existing.slot !== def.slot) {
+        // Shouldn't normally happen (slots are stable once assigned),
+        // but handle it defensively rather than leaving a stale bind.
+        this._unbindOne(def.id, existing.slot);
+        this._bindOne(def);
+        continue;
+      }
+      // Same slot: just refresh accel/command in place. Writing the
+      // slot's own settings value is enough for Shell to pick up an
+      // accelerator change live — no need to remove/re-add the binding.
+      this._settings.set_strv(this._slotName(def.slot), def.accel ? [def.accel] : []);
+      existing.command = def.command;
     }
   }
 
-  _onKeyPress(key) {
-    const entry = this._bindingsByKey?.get(key);
-    if (!entry) return;
-    journal(`Keybinding triggered: ${key} (${entry.accel})`);
+  _onKeyPress(id) {
+    const entry = this._bound.get(id);
+    if (!entry || !entry.command) return;
+    journal(`Keybinding triggered: ${id}`);
     try {
       GLib.spawn_command_line_async(entry.command);
     } catch (e) {
-      journal(`Failed to run command for ${key}: ${e}`, true);
+      journal(`Failed to run command for ${id}: ${e}`, true);
     }
   }
 
   disable() {
-    if (!this._bindingsByKey) return;
-    for (const key of this._bindingsByKey.keys()) {
-      Main.wm.removeKeybinding(key);
-      this._settings.reset(key);
+    if (this._definitionsChangedId) {
+      this._settings.disconnect(this._definitionsChangedId);
+      this._definitionsChangedId = null;
     }
-    this._bindingsByKey = null;
-    this._settings = null;
 
+    if (this._bound) {
+      for (const [id, { slot }] of this._bound)
+        this._unbindOne(id, slot);
+      this._bound = null;
+    }
+
+    this._settings = null;
     journal('Extension disabled: all cleaned.');
   }
 }
