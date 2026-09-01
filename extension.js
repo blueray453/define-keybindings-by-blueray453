@@ -18,35 +18,44 @@ export default class ExampleExtension extends Extension {
       'org.gnome.shell.extensions.define-keybindings-by-blueray453'
     );
 
-    // Map key -> entry
     this._bindingsByKey = new Map(KEYBINDINGS.map(b => [b.key, b]));
 
-    // Which keys have passthrough? (for quick lookup)
-    this._passthroughKeys = KEYBINDINGS
-      .filter(b => b.passthroughWmClass)
-      .map(b => b.key);
-
-    // Seed GSettings defaults
-    for (const { key, accel } of KEYBINDINGS) {
-      if (this._settings.get_strv(key).length === 0)
+    // ---- Seed defaults from keybindingsData.js (SSOT) ----
+    for (const { key, accel, passthroughWmClass } of KEYBINDINGS) {
+      // Accelerator
+      if (this._settings.get_strv(key).length === 0) {
         this._settings.set_strv(key, [accel]);
+      }
+      // Passthrough list
+      const pKey = `${key}-passthrough`;
+      if (this._settings.get_strv(pKey).length === 0) {
+        this._settings.set_strv(pKey, passthroughWmClass || []);
+      }
     }
 
-    // Add all keybindings initially
+    // ---- Add all keybindings initially ----
     for (const { key } of KEYBINDINGS) {
       this._addKeybinding(key);
     }
 
-    // Track which passthrough keys are currently added (we'll toggle them)
-    // We'll assume they start as added; the focus handler will adjust.
-    this._passthroughAdded = new Set(this._passthroughKeys);
+    // Track which passthrough keys are currently added
+    this._passthroughAdded = new Set();
 
-    // Connect focus change signal
+    // ---- Focus change signal ----
     this._focusSignalId = global.display.connect('notify::focus-window', () => {
       this._updatePassthroughBindings();
     });
 
-    // Apply initial state based on current focus
+    // ---- Listen for passthrough list changes in GSettings ----
+    this._passthroughChangedIds = [];
+    for (const { key } of KEYBINDINGS) {
+      const id = this._settings.connect(`changed::${key}-passthrough`, () => {
+        this._updatePassthroughBindings();
+      });
+      this._passthroughChangedIds.push(id);
+    }
+
+    // ---- Apply initial state ----
     this._updatePassthroughBindings();
 
     journal('Extension enabled with dynamic passthrough management');
@@ -70,9 +79,10 @@ export default class ExampleExtension extends Extension {
     const entry = this._bindingsByKey.get(key);
     if (!entry) return;
 
-    // This should never be called for passthrough keys when they are removed,
-    // but keep as safeguard.
-    if (entry.passthroughWmClass && this._focusedWmClassIs(entry.passthroughWmClass)) {
+    // Guard: should never happen because passthrough bindings are removed
+    // when the focused window matches, but keep as safety net.
+    if (this._getPassthroughList(key).length > 0 &&
+      this._focusedWmClassIs(this._getPassthroughList(key))) {
       journal(`Keybinding ${key} triggered but window is passthrough – ignoring`);
       return;
     }
@@ -99,57 +109,51 @@ export default class ExampleExtension extends Extension {
     );
   }
 
+  _getPassthroughList(key) {
+    const list = this._settings.get_strv(`${key}-passthrough`);
+    return list.filter(s => s.trim().length > 0);
+  }
+
   _updatePassthroughBindings() {
     const win = global.display.focus_window;
     const wmClass = win?.get_wm_class()?.toLowerCase();
 
-    // Determine if any passthrough key should be active for this window
-    let shouldRemove = false;
-    if (wmClass) {
-      for (const key of this._passthroughKeys) {
-        const entry = this._bindingsByKey.get(key);
-        if (!entry) continue;
-        const candidates = Array.isArray(entry.passthroughWmClass)
-          ? entry.passthroughWmClass
-          : [entry.passthroughWmClass];
-        if (candidates.some(c => c.toLowerCase() === wmClass)) {
-          shouldRemove = true;
-          break;
-        }
-      }
-    }
+    for (const [key, entry] of this._bindingsByKey) {
+      const list = this._getPassthroughList(key);
+      const shouldRemove = wmClass && list.some(cls => cls.toLowerCase() === wmClass);
 
-    // For each passthrough key, add or remove as needed
-    for (const key of this._passthroughKeys) {
       const currentlyAdded = this._passthroughAdded.has(key);
-      if (shouldRemove) {
-        if (currentlyAdded) {
-          this._removeKeybinding(key);
-          this._passthroughAdded.delete(key);
-          journal(`Removed keybinding ${key} (passthrough window focused)`);
-        }
-      } else {
-        if (!currentlyAdded) {
-          this._addKeybinding(key);
-          this._passthroughAdded.add(key);
-          journal(`Re-added keybinding ${key} (passthrough window lost focus)`);
-        }
+      if (shouldRemove && currentlyAdded) {
+        this._removeKeybinding(key);
+        this._passthroughAdded.delete(key);
+        journal(`Removed keybinding ${key} (passthrough window focused)`);
+      } else if (!shouldRemove && !currentlyAdded) {
+        this._addKeybinding(key);
+        this._passthroughAdded.add(key);
+        journal(`Re-added keybinding ${key} (passthrough window lost focus)`);
       }
     }
   }
 
   disable() {
-    // Disconnect signal
+    // Disconnect focus signal
     if (this._focusSignalId) {
       global.display.disconnect(this._focusSignalId);
       this._focusSignalId = null;
     }
 
-    // Remove all keybindings
+    // Disconnect passthrough change signals
+    if (this._passthroughChangedIds) {
+      for (const id of this._passthroughChangedIds) {
+        this._settings.disconnect(id);
+      }
+      this._passthroughChangedIds = null;
+    }
+
+    // Remove all keybindings (but DO NOT reset settings)
     if (this._bindingsByKey) {
       for (const key of this._bindingsByKey.keys()) {
         Main.wm.removeKeybinding(key);
-        this._settings.reset(key);
       }
       this._bindingsByKey = null;
     }

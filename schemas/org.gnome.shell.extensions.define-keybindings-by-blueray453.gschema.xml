@@ -2,6 +2,7 @@
   <schema id="org.gnome.shell.extensions.define-keybindings-by-blueray453"
           path="/org/gnome/shell/extensions/define-keybindings-by-blueray453/">
 
+    <!-- ==================== ACCELERATOR KEYS ==================== -->
     <key name="kb-1" type="as">
       <default>[]</default>
       <summary>Keybinding 1</summary>
@@ -69,6 +70,76 @@
     <key name="kb-17" type="as">
       <default>[]</default>
       <summary>Keybinding 17</summary>
+    </key>
+
+    <!-- ==================== PASSTHROUGH LISTS ==================== -->
+    <key name="kb-1-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-1</summary>
+    </key>
+    <key name="kb-2-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-2</summary>
+    </key>
+    <key name="kb-3-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-3</summary>
+    </key>
+    <key name="kb-4-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-4</summary>
+    </key>
+    <key name="kb-5-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-5</summary>
+    </key>
+    <key name="kb-6-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-6</summary>
+    </key>
+    <key name="kb-7-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-7</summary>
+    </key>
+    <key name="kb-8-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-8</summary>
+    </key>
+    <key name="kb-9-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-9</summary>
+    </key>
+    <key name="kb-10-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-10</summary>
+    </key>
+    <key name="kb-11-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-11</summary>
+    </key>
+    <key name="kb-12-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-12</summary>
+    </key>
+    <key name="kb-13-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-13</summary>
+    </key>
+    <key name="kb-14-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-14</summary>
+    </key>
+    <key name="kb-15-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-15</summary>
+    </key>
+    <key name="kb-16-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-16</summary>
+    </key>
+    <key name="kb-17-passthrough" type="as">
+      <default>[]</default>
+      <summary>Passthrough WM classes for kb-17</summary>
     </key>
 
   </schema>
