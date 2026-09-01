@@ -20,6 +20,6 @@ export const KEYBINDINGS = [
     { key: 'kb-13', accel: '<Super>Tab', command: 'gnomeutils-call -i workspaces ToggleWorkspaces', description: 'Toggle workspaces overview' },
     { key: 'kb-14', accel: 'Print', command: 'gdmenu-screenshot', description: 'Take a screenshot' },
     { key: 'kb-15', accel: '<Super>w', command: 'gdmenu-activity-overview', description: 'Open activity overview' },
-    { key: 'kb-16', accel: '<Super>o', command: 'open-file-path', description: 'Open file path' },
+    { key: 'kb-16', accel: '<Super>o', command: 'open-file-path', description: 'Open file path', passthroughWmClass: ['VSCodium'] },
     { key: 'kb-17', accel: '<Super>q', command: 'capture2text', description: 'Capture text (OCR)' },
 ];

@@ -1,0 +1,539 @@
+// ===== FILE: ./keybindingsData.js =====
+// ==================== KEYBINDINGS DATA ====================
+// Single source of truth for every keybinding this extension defines:
+// which GSettings key backs it, its default accelerator, what command
+// it runs, and its human-readable label. Both extension.js (to seed
+// defaults and dispatch commands) and prefs.js (to build the editor UI)
+// import this same array — edit a keybinding here once, nowhere else.
+export const KEYBINDINGS = [
+    { key: 'kb-1', accel: '<Super>grave', command: 'gnomeutils-call --interface windows AlignWindowsOfFocusedWindowWMClass', description: 'Align windows of focused window\'s app' },
+    { key: 'kb-2', accel: '<Super>a', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 0', description: 'Switch to workspace 1' },
+    { key: 'kb-3', accel: '<Super>n', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 1', description: 'Switch to workspace 2' },
+    { key: 'kb-4', accel: '<Super>f', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 2', description: 'Switch to workspace 3' },
+    { key: 'kb-5', accel: '<Super>c', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 3', description: 'Switch to workspace 4' },
+    { key: 'kb-6', accel: '<Super>b', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 4', description: 'Switch to workspace 5' },
+    { key: 'kb-7', accel: '<Super>v', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 5', description: 'Switch to workspace 6' },
+    { key: 'kb-8', accel: '<Super>r', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 6', description: 'Switch to workspace 7' },
+    { key: 'kb-9', accel: '<Super>x', command: 'gnomeutils-call -i keybinding SwitchToWorkspace 7', description: 'Switch to workspace 8' },
+    { key: 'kb-10', accel: '<Super>Delete', command: 'gnomeutils-call --interface tagged CloseOtherNotMarkedWindowsCurrentWorkspaceOfFocusedWindowWMClass', description: 'Close windows not marked, on current workspace' },
+    { key: 'kb-11', accel: '<Super>m', command: 'gnomeutils-call -i tagged ToggleMarksFocusedWindow', description: 'Toggle mark on focused window' },
+    { key: 'kb-12', accel: '<Super>p', command: 'gnomeutils-call -i tagged TogglePinsFocusedWindow', description: 'Toggle pin on focused window' },
+    { key: 'kb-13', accel: '<Super>Tab', command: 'gnomeutils-call -i workspaces ToggleWorkspaces', description: 'Toggle workspaces overview' },
+    { key: 'kb-14', accel: 'Print', command: 'gdmenu-screenshot', description: 'Take a screenshot' },
+    { key: 'kb-15', accel: '<Super>w', command: 'gdmenu-activity-overview', description: 'Open activity overview' },
+    { key: 'kb-16', accel: '<Super>o', command: 'open-file-path', description: 'Open file path' },
+    { key: 'kb-17', accel: '<Super>q', command: 'capture2text', description: 'Capture text (OCR)' },
+];
+
+// ===== FILE: ./schemas/org.gnome.shell.extensions.define-keybindings-by-blueray453.gschema.xml =====
+<schemalist>
+  <schema id="org.gnome.shell.extensions.define-keybindings-by-blueray453"
+          path="/org/gnome/shell/extensions/define-keybindings-by-blueray453/">
+
+    <key name="kb-1" type="as">
+      <default>[]</default>
+      <summary>Keybinding 1</summary>
+    </key>
+    <key name="kb-2" type="as">
+      <default>[]</default>
+      <summary>Keybinding 2</summary>
+    </key>
+    <key name="kb-3" type="as">
+      <default>[]</default>
+      <summary>Keybinding 3</summary>
+    </key>
+    <key name="kb-4" type="as">
+      <default>[]</default>
+      <summary>Keybinding 4</summary>
+    </key>
+    <key name="kb-5" type="as">
+      <default>[]</default>
+      <summary>Keybinding 5</summary>
+    </key>
+    <key name="kb-6" type="as">
+      <default>[]</default>
+      <summary>Keybinding 6</summary>
+    </key>
+    <key name="kb-7" type="as">
+      <default>[]</default>
+      <summary>Keybinding 7</summary>
+    </key>
+    <key name="kb-8" type="as">
+      <default>[]</default>
+      <summary>Keybinding 8</summary>
+    </key>
+    <key name="kb-9" type="as">
+      <default>[]</default>
+      <summary>Keybinding 9</summary>
+    </key>
+    <key name="kb-10" type="as">
+      <default>[]</default>
+      <summary>Keybinding 10</summary>
+    </key>
+    <key name="kb-11" type="as">
+      <default>[]</default>
+      <summary>Keybinding 11</summary>
+    </key>
+    <key name="kb-12" type="as">
+      <default>[]</default>
+      <summary>Keybinding 12</summary>
+    </key>
+    <key name="kb-13" type="as">
+      <default>[]</default>
+      <summary>Keybinding 13</summary>
+    </key>
+    <key name="kb-14" type="as">
+      <default>[]</default>
+      <summary>Keybinding 14</summary>
+    </key>
+    <key name="kb-15" type="as">
+      <default>[]</default>
+      <summary>Keybinding 15</summary>
+    </key>
+    <key name="kb-16" type="as">
+      <default>[]</default>
+      <summary>Keybinding 16</summary>
+    </key>
+    <key name="kb-17" type="as">
+      <default>[]</default>
+      <summary>Keybinding 17</summary>
+    </key>
+
+  </schema>
+</schemalist>
+// ===== FILE: ./logger.js =====
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+
+let loggingEnabled = false;
+let logOutput = 'journal';
+let uuid = null;
+let logFile = null;
+
+
+/*
+ * logger.js is in the extension root.
+ */
+const extensionDir = GLib.path_get_dirname(
+    GLib.filename_from_uri(import.meta.url)[0]
+);
+
+
+/*
+ * Initialize logging.
+ *
+ * output:
+ *   'journal' -> GNOME Journal only
+ *   'file'    -> file only
+ *   'both'    -> GNOME Journal + file
+ *
+ * enabled:
+ *   true  -> logging enabled
+ *   false -> logging disabled
+ */
+function initLogging(
+    extensionUuid,
+    output = 'journal',
+    enabled = true
+) {
+    uuid = extensionUuid;
+    logOutput = output;
+    loggingEnabled = enabled;
+
+    if (output === 'file' || output === 'both') {
+        logFile = GLib.build_filenamev([
+            GLib.get_home_dir(),
+            `${uuid}.log`,
+        ]);
+    } else {
+        logFile = null;
+    }
+}
+
+
+/*
+ * Create a logger for a source file.
+ *
+ * Usage:
+ *
+ * const journal = createLogger(import.meta.url);
+ */
+function createLogger(source) {
+    let sourceFile;
+
+    try {
+        sourceFile = GLib.filename_from_uri(source)[0];
+    } catch (e) {
+        sourceFile = source;
+    }
+
+    /*
+     * Convert absolute path into a path
+     * relative to the extension root.
+     */
+    const prefix = `${extensionDir}/`;
+
+    if (sourceFile.startsWith(prefix)) {
+        sourceFile = sourceFile.substring(prefix.length);
+    }
+
+    const relativeSource = sourceFile;
+
+
+    return function journal(msg) {
+
+        /*
+         * Logging disabled?
+         *
+         * Do absolutely nothing.
+         */
+        if (!loggingEnabled)
+            return;
+
+
+        /*
+         * Create timestamp once.
+         */
+        // const timestamp = GLib.DateTime
+        //     .new_now_local()
+        //     .format('%Y-%m-%d %H:%M:%S');
+
+
+        /*
+         * Create the complete message once.
+         *
+         * Both Journal and file receive
+         * exactly this same string.
+         */
+        // const output = `[${timestamp}] [${relativeSource}] ${msg}`;
+        const output = `[${relativeSource}] ${msg}`;
+
+
+        if (
+            logOutput === 'journal' ||
+            logOutput === 'both'
+        ) {
+            writeToJournal(output);
+        }
+
+
+        if (
+            logOutput === 'file' ||
+            logOutput === 'both'
+        ) {
+            writeToFile(output);
+        }
+    };
+}
+
+
+function writeToJournal(output) {
+    GLib.log_structured(
+        uuid,
+        GLib.LogLevelFlags.LEVEL_MESSAGE,
+        {
+            MESSAGE: output,
+            SYSLOG_IDENTIFIER: uuid,
+        }
+    );
+}
+
+
+function writeToFile(output) {
+    if (!logFile)
+        return;
+
+    try {
+        const file = Gio.File.new_for_path(logFile);
+
+        const stream = file.append_to(
+            Gio.FileCreateFlags.NONE,
+            null
+        );
+
+        const bytes =
+            new TextEncoder().encode(`${output}\n`);
+
+        stream.write_all(bytes, null);
+        stream.close(null);
+
+    } catch (e) {
+        /*
+         * Don't call journal() here.
+         */
+        console.error(
+            `[${uuid}] Failed to write log file: ${e}`
+        );
+    }
+}
+
+
+export {
+    initLogging,
+    createLogger,
+};
+// ===== FILE: ./prefs.js =====
+import Gtk from 'gi://Gtk';
+import Gdk from 'gi://Gdk';
+import Adw from 'gi://Adw';
+import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+
+import { KEYBINDINGS } from './keybindingsData.js';
+
+export default class DefineKeybindingsPreferences extends ExtensionPreferences {
+    fillPreferencesWindow(window) {
+        const settings = this.getSettings();
+
+        const page = new Adw.PreferencesPage({
+            title: 'Keybindings',
+            icon_name: 'input-keyboard-symbolic',
+        });
+        window.add(page);
+
+        const group = new Adw.PreferencesGroup({
+            title: 'Shortcuts',
+            description: 'Click a shortcut to change it. Defaults are the shortcuts this extension originally shipped with.',
+        });
+        page.add(group);
+
+        this._rows = [];
+        for (const binding of KEYBINDINGS) {
+            const row = this._buildRow(settings, binding, window);
+            this._rows.push(row);
+            group.add(row.widget);
+        }
+
+        const miscGroup = new Adw.PreferencesGroup();
+        page.add(miscGroup);
+
+        const resetRow = new Adw.ActionRow({ title: 'Reset all shortcuts to defaults' });
+        const resetBtn = new Gtk.Button({ label: 'Reset All', css_classes: ['destructive-action'], valign: Gtk.Align.CENTER });
+        resetBtn.connect('clicked', () => {
+            for (const row of this._rows)
+                row.resetToDefault();
+        });
+        resetRow.add_suffix(resetBtn);
+        resetRow.set_activatable_widget(resetBtn);
+        miscGroup.add(resetRow);
+    }
+
+    _buildRow(settings, binding, window) {
+        const row = new Adw.ActionRow({
+            title: binding.description,
+            subtitle: binding.command,
+        });
+
+        const shortcutLabel = new Gtk.ShortcutLabel({
+            valign: Gtk.Align.CENTER,
+            disabled_text: 'Disabled',
+        });
+
+        const readCurrent = () => {
+            const strv = settings.get_strv(binding.key);
+            return strv.length > 0 ? strv[0] : '';
+        };
+
+        const refreshLabel = () => {
+            shortcutLabel.set_accelerator(readCurrent());
+        };
+        refreshLabel();
+
+        // Schema defaults are now empty ([]) since the schema is minimal —
+        // if nothing's been saved yet, show binding.default (from
+        // keybindingsData.js) as a placeholder, but do NOT write it. This
+        // covers a fresh prefs-window open before extension.js has ever run
+        // enable() to seed the real default into GSettings.
+        if (readCurrent() === '')
+            shortcutLabel.set_accelerator(binding.accel);
+
+        const changedId = settings.connect(`changed::${binding.key}`, refreshLabel);
+        row.connect('destroy', () => settings.disconnect(changedId));
+
+        const editBtn = new Gtk.Button({
+            child: shortcutLabel,
+            valign: Gtk.Align.CENTER,
+            css_classes: ['flat'],
+        });
+        editBtn.connect('clicked', () => this._openCaptureDialog(window, settings, binding, refreshLabel));
+        row.add_suffix(editBtn);
+
+        const resetBtn = new Gtk.Button({
+            icon_name: 'edit-undo-symbolic',
+            valign: Gtk.Align.CENTER,
+            css_classes: ['flat'],
+            tooltip_text: 'Reset to default',
+        });
+        // settings.reset() would just clear back to the schema's empty
+        // default now, not the real shortcut — the actual default lives in
+        // keybindingsData.js, so reset explicitly writes it back.
+        const resetToDefault = () => {
+            settings.set_strv(binding.key, [binding.accel]);
+            refreshLabel();
+        };
+        resetBtn.connect('clicked', resetToDefault);
+        row.add_suffix(resetBtn);
+
+        row.set_activatable_widget(editBtn);
+
+        return { widget: row, resetToDefault, refreshLabel };
+    }
+
+    _openCaptureDialog(window, settings, binding, onSaved) {
+        const dialog = new Adw.Window({
+            transient_for: window,
+            modal: true,
+            default_width: 380,
+            default_height: 160,
+            title: `Set shortcut — ${binding.description}`,
+        });
+
+        const box = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 12,
+            margin_top: 24,
+            margin_bottom: 24,
+            margin_start: 24,
+            margin_end: 24,
+            valign: Gtk.Align.CENTER,
+        });
+
+        box.append(new Gtk.Label({
+            label: 'Press a key combination, or Escape to cancel.\nBackspace clears the shortcut.',
+            justify: Gtk.Justification.CENTER,
+            wrap: true,
+        }));
+
+        const preview = new Gtk.ShortcutLabel({ halign: Gtk.Align.CENTER });
+        box.append(preview);
+
+        const status = new Gtk.Label({ label: '', css_classes: ['error'], wrap: true, justify: Gtk.Justification.CENTER });
+        box.append(status);
+
+        dialog.set_content(box);
+
+        const controller = new Gtk.EventControllerKey();
+        dialog.add_controller(controller);
+
+        controller.connect('key-pressed', (ctrl, keyval, keycode, state) => {
+            if (keyval === Gdk.KEY_Escape) {
+                dialog.close();
+                return true;
+            }
+            if (keyval === Gdk.KEY_BackSpace) {
+                settings.set_strv(binding.key, []);
+                onSaved();
+                dialog.close();
+                return true;
+            }
+
+            const mask = state & Gtk.accelerator_get_default_mod_mask();
+            if (!Gtk.accelerator_valid(keyval, mask) || this._isModifierOnly(keyval))
+                return true;
+
+            const accel = Gtk.accelerator_name(keyval, mask);
+            preview.set_accelerator(accel);
+
+            const conflict = this._findConflict(settings, binding.key, accel);
+            if (conflict) {
+                status.set_label(`Already used by "${conflict.description}"`);
+                return true;
+            }
+
+            settings.set_strv(binding.key, [accel]);
+            onSaved();
+            dialog.close();
+            return true;
+        });
+
+        dialog.present();
+    }
+
+    _isModifierOnly(keyval) {
+        return [
+            Gdk.KEY_Shift_L, Gdk.KEY_Shift_R,
+            Gdk.KEY_Control_L, Gdk.KEY_Control_R,
+            Gdk.KEY_Alt_L, Gdk.KEY_Alt_R,
+            Gdk.KEY_Super_L, Gdk.KEY_Super_R,
+            Gdk.KEY_Meta_L, Gdk.KEY_Meta_R,
+        ].includes(keyval);
+    }
+
+    _findConflict(settings, ownKey, accel) {
+        for (const binding of KEYBINDINGS) {
+            if (binding.key === ownKey)
+                continue;
+            const strv = settings.get_strv(binding.key);
+            if (strv.length > 0 && strv[0] === accel)
+                return binding;
+        }
+        return null;
+    }
+}
+// ===== FILE: ./extension.js =====
+import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
+import GLib from 'gi://GLib';
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
+import { KEYBINDINGS } from './keybindingsData.js';
+import {
+  initLogging,
+  createLogger,
+} from './logger.js';
+
+const journal = createLogger(import.meta.url);
+
+export default class ExampleExtension extends Extension {
+  enable() {
+    initLogging(this.uuid, 'both', false);
+    journal(`Enabled`);
+
+    this._settings = this.getSettings(
+      'org.gnome.shell.extensions.define-keybindings-by-blueray453'
+    );
+
+    // Fast lookup by GSettings key name, used in _onKeyPress below.
+    this._bindingsByKey = new Map(KEYBINDINGS.map(b => [b.key, b]));
+
+    for (const { key, accel } of KEYBINDINGS) {
+      // Only seed the default if nothing's been saved yet (schema
+      // defaults are now empty arrays — the real default accelerator
+      // lives only in keybindingsData.js). Never overwrite a value
+      // prefs.js has already set.
+      if (this._settings.get_strv(key).length === 0)
+        this._settings.set_strv(key, [accel]);
+
+      Main.wm.addKeybinding(
+        key,
+        this._settings,
+        Meta.KeyBindingFlags.NONE,
+        Shell.ActionMode.ALL,
+        () => this._onKeyPress(key)
+      );
+    }
+  }
+
+  _onKeyPress(key) {
+    const entry = this._bindingsByKey?.get(key);
+    if (!entry) return;
+    journal(`Keybinding triggered: ${key} (${entry.accel})`);
+    try {
+      GLib.spawn_command_line_async(entry.command);
+    } catch (e) {
+      journal(`Failed to run command for ${key}: ${e}`, true);
+    }
+  }
+
+  disable() {
+    if (!this._bindingsByKey) return;
+    for (const key of this._bindingsByKey.keys()) {
+      Main.wm.removeKeybinding(key);
+      this._settings.reset(key);
+    }
+    this._bindingsByKey = null;
+    this._settings = null;
+
+    journal('Extension disabled: all cleaned.');
+  }
+}
