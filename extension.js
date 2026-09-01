@@ -7,27 +7,33 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { KEYBINDINGS } from './keybindingsData.js';
-
-import {
-  initLogging,
-  createLogger,
-} from './logger.js';
+import { initLogging, createLogger } from './logger.js';
 
 const journal = createLogger(import.meta.url);
 
-const MODIFIER_KEYVALS = [
-  [Clutter.ModifierType.SUPER_MASK, Clutter.KEY_Super_L],
-  [Clutter.ModifierType.CONTROL_MASK, Clutter.KEY_Control_L],
-  [Clutter.ModifierType.SHIFT_MASK, Clutter.KEY_Shift_L],
-  [Clutter.ModifierType.MOD1_MASK, Clutter.KEY_Alt_L],
+// Keyvals to synthesize for each parsed-accelerator modifier bit.
+const MODIFIER_INFO = [
+  { parsedBit: Clutter.ModifierType.SHIFT_MASK, keyval: Clutter.KEY_Shift_L },
+  { parsedBit: Clutter.ModifierType.CONTROL_MASK, keyval: Clutter.KEY_Control_L },
+  { parsedBit: Clutter.ModifierType.MOD1_MASK, keyval: Clutter.KEY_Alt_L },
+  { parsedBit: Clutter.ModifierType.SUPER_MASK, keyval: Clutter.KEY_Super_L },
 ];
 
+// Same modifiers, mapped to the RAW hardware modifier bit reported by
+// global.get_pointer() for the same physical key. Super is the odd one
+// out: accelerator parsing normalizes it to SUPER_MASK, but raw
+// pointer/modifier state reports it as MOD4_MASK.
 const RAW_MODIFIER_FOR_PARSED_MASK = [
   [Clutter.ModifierType.SHIFT_MASK, Clutter.ModifierType.SHIFT_MASK],
   [Clutter.ModifierType.CONTROL_MASK, Clutter.ModifierType.CONTROL_MASK],
   [Clutter.ModifierType.MOD1_MASK, Clutter.ModifierType.MOD1_MASK],
   [Clutter.ModifierType.SUPER_MASK, Clutter.ModifierType.MOD4_MASK],
 ];
+
+// How long to leave the keybinding grab dropped after injecting, so the
+// synthetic keypress has time to actually reach the focused app before
+// Shell starts intercepting Super+O again.
+const REGRAB_DELAY_MS = 150;
 
 export default class ExampleExtension extends Extension {
   enable() {
@@ -43,11 +49,14 @@ export default class ExampleExtension extends Extension {
       .create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
     journal(`[init] virtualKeyboard created: ${!!this._virtualKeyboard}`);
 
-    this._pendingForwardTimeoutId = null;
     this._regrabTimeoutId = null;
     this._bindingsByKey = new Map(KEYBINDINGS.map(b => [b.key, b]));
 
     for (const { key, accel } of KEYBINDINGS) {
+      // Only seed the default if nothing's been saved yet (schema
+      // defaults are now empty arrays — the real default accelerator
+      // lives only in keybindingsData.js). Never overwrite a value
+      // prefs.js has already set.
       if (this._settings.get_strv(key).length === 0)
         this._settings.set_strv(key, [accel]);
 
@@ -120,80 +129,62 @@ export default class ExampleExtension extends Extension {
       return;
     }
 
-    const rawWaitMask = RAW_MODIFIER_FOR_PARSED_MASK
-      .filter(([parsedBit]) => (mask & parsedBit) !== 0)
-      .reduce((acc, [, rawBit]) => acc | rawBit, 0);
+    // 1. Remove the shell's keybinding so it won't intercept our synthetic events
+    journal(`[forward] removing grab for ${key} before injecting`);
+    Main.wm.removeKeybinding(key);
 
-    this._waitForModifiersReleased(rawWaitMask, () => {
-      journal(`[forward] removing grab for ${key} before injecting`);
-      Main.wm.removeKeybinding(key);
+    const now = Clutter.CURRENT_TIME;
+    const superKeyval = Clutter.KEY_Super_L;   // the left Super key
 
-      this._injectKeypress(keyval, mask);
+    try {
+      // 2. Programmatically release BOTH Super and O
+      //    This clears the "already down" state so a fresh press is accepted.
+      this._virtualKeyboard.notify_keyval(now, superKeyval, Clutter.KeyState.RELEASED);
+      this._virtualKeyboard.notify_keyval(now, keyval, Clutter.KeyState.RELEASED);
 
-      if (this._regrabTimeoutId) {
-        GLib.source_remove(this._regrabTimeoutId);
-        this._regrabTimeoutId = null;
-      }
+      // 3. Re‑inject the full Super+O sequence:
+      //    press Super, press O, release O, release Super.
+      this._virtualKeyboard.notify_keyval(now, superKeyval, Clutter.KeyState.PRESSED);
+      this._virtualKeyboard.notify_keyval(now, keyval, Clutter.KeyState.PRESSED);
+      this._virtualKeyboard.notify_keyval(now, keyval, Clutter.KeyState.RELEASED);
+      this._virtualKeyboard.notify_keyval(now, superKeyval, Clutter.KeyState.RELEASED);
 
-      this._regrabTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 150, () => {
-        journal(`[forward] re-adding grab for ${key}`);
-        this._addKeybinding(key);
-        this._regrabTimeoutId = null;
-        return GLib.SOURCE_REMOVE;
-      });
-    });
-  }
-
-  _waitForModifiersReleased(rawWaitMask, onReleased) {
-    if (rawWaitMask === 0) {
-      onReleased();
-      return;
+      journal(`[forward] Released and re‑injected Super+O`);
+    } catch (e) {
+      journal(`[forward] EXCEPTION during notify_keyval sequence: ${e}`, true);
     }
 
-    let attempts = 0;
-    const MAX_ATTEMPTS = 40;
+    // 4. Re‑add the keybinding after a short delay so the events reach the app
+    if (this._regrabTimeoutId) {
+      GLib.source_remove(this._regrabTimeoutId);
+      this._regrabTimeoutId = null;
+    }
 
-    this._pendingForwardTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 25, () => {
-      const [, , modifiers] = global.get_pointer();
-      attempts++;
-      const relevant = modifiers & rawWaitMask;
-
-      journal(`[forward] poll #${attempts}: modifiers=0b${modifiers.toString(2)} relevant=0b${relevant.toString(2)}`);
-
-      if (relevant === 0) {
-        journal(`[forward] modifiers released after ${attempts} poll(s)`);
-        this._pendingForwardTimeoutId = null;
-        onReleased();
-        return GLib.SOURCE_REMOVE;
-      }
-
-      if (attempts >= MAX_ATTEMPTS) {
-        journal(`[forward] gave up waiting for modifier release after ${attempts} polls — injecting anyway`, true);
-        this._pendingForwardTimeoutId = null;
-        onReleased();
-        return GLib.SOURCE_REMOVE;
-      }
-
-      return GLib.SOURCE_CONTINUE;
+    this._regrabTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, REGRAB_DELAY_MS, () => {
+      journal(`[forward] re-adding grab for ${key}`);
+      this._addKeybinding(key);
+      this._regrabTimeoutId = null;
+      return GLib.SOURCE_REMOVE;
     });
   }
 
   _injectKeypress(keyval, mask) {
-    const modifiers = MODIFIER_KEYVALS
-      .filter(([m]) => (mask & m) !== 0)
-      .map(([, kv]) => kv);
+    const modifiersInAccel = MODIFIER_INFO
+      .filter(({ parsedBit }) => (mask & parsedBit) !== 0)
+      .map(({ keyval: kv }) => kv);
 
-    const now = Clutter.get_current_event_time() * 1000;
-    journal(`[forward] injecting with eventTime=${now}`);
+    journal(`[forward] modifiers to synthesize: [${modifiersInAccel.map(k => k.toString(16)).join(', ')}]`);
+
+    const now = Clutter.CURRENT_TIME;
 
     try {
-      for (const mod of modifiers)
+      for (const mod of modifiersInAccel)
         this._virtualKeyboard.notify_keyval(now, mod, Clutter.KeyState.PRESSED);
 
       this._virtualKeyboard.notify_keyval(now, keyval, Clutter.KeyState.PRESSED);
       this._virtualKeyboard.notify_keyval(now, keyval, Clutter.KeyState.RELEASED);
 
-      for (const mod of modifiers.slice().reverse())
+      for (const mod of modifiersInAccel.slice().reverse())
         this._virtualKeyboard.notify_keyval(now, mod, Clutter.KeyState.RELEASED);
 
       journal(`[forward] done — all events sent without throwing`);
@@ -203,10 +194,6 @@ export default class ExampleExtension extends Extension {
   }
 
   disable() {
-    if (this._pendingForwardTimeoutId) {
-      GLib.source_remove(this._pendingForwardTimeoutId);
-      this._pendingForwardTimeoutId = null;
-    }
     if (this._regrabTimeoutId) {
       GLib.source_remove(this._regrabTimeoutId);
       this._regrabTimeoutId = null;
