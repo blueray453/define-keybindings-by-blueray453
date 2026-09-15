@@ -1,23 +1,25 @@
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { KEYBINDINGS } from './keybindingsData.js';
+import { callDBusMethod } from './dbusClient.js';
 import { initLogging, createLogger } from './logger.js';
 
 const journal = createLogger(import.meta.url);
 
 const SETTINGS_SCHEMA = 'org.gnome.shell.extensions.define-keybindings-by-blueray453';
 
+// Cross-extension: TopNotchWorkspaces' overlay service.
+const TOPNOTCH_BUS_NAME = 'io.github.blueray453.TopNotchWorkspaces';
+const TOPNOTCH_OVERLAY_PATH = '/io/github/blueray453/TopNotchWorkspaces/Overlay';
+const TOPNOTCH_OVERLAY_IFACE = 'io.github.blueray453.TopNotchWorkspaces.Overlay';
+
 // ---------------------------------------------------------------------------
 // Module state.
-//
-// Everything the extension tracks at runtime lives here, not on the Extension
-// instance. The logic below is plain functions reading and writing this
-// object, so there is exactly one place to look for "what state does this
-// extension keep".
 // ---------------------------------------------------------------------------
 const state = {
   settings: null,
@@ -25,14 +27,14 @@ const state = {
   passthroughAdded: null,  // Set: keys whose binding is currently registered
   focusSignalId: 0,
   passthroughChangedIds: [],
+  overlayKeyHandlerId: 0,
+  originalOverlayHandlerId: 0,
 };
 
 // ---------------------------------------------------------------------------
 // Settings helpers.
 // ---------------------------------------------------------------------------
 
-// Seed defaults from keybindingsData.js (SSOT). Only writes when the stored
-// value is empty, so user customizations are never overwritten on re-enable.
 function seedDefaults() {
   for (const { key, accel, passthroughWmClass } of KEYBINDINGS) {
     if (state.settings.get_strv(key).length === 0)
@@ -71,8 +73,6 @@ function onKeyPress(key) {
   const entry = state.bindingsByKey.get(key);
   if (!entry) return;
 
-  // Guard: should never happen because passthrough bindings are removed
-  // when the focused window matches, but keep as safety net.
   const list = getPassthroughList(key);
   if (list.length > 0 && focusedWmClassIs(list)) {
     journal(`Keybinding ${key} triggered but window is passthrough – ignoring`);
@@ -125,7 +125,62 @@ function updatePassthroughBindings() {
 }
 
 // ---------------------------------------------------------------------------
-// Lifecycle. Called from the Extension subclass below.
+// Overlay key (bare Super).
+//
+// GNOME's native overlay-key handler (on global.display) toggles the overview.
+// We block that handler and connect our own, which hides the overview (if
+// visible) and asks TopNotchWorkspaces to toggle its all-apps overlay.
+//
+// No settings involved — the override is active whenever this extension is
+// enabled and restored on disable.
+// ---------------------------------------------------------------------------
+
+function onSuperKeyPressed() {
+  if (Main.overview.visibleTarget)
+    Main.overview.hide();
+
+  callDBusMethod(
+    TOPNOTCH_BUS_NAME, TOPNOTCH_OVERLAY_PATH, TOPNOTCH_OVERLAY_IFACE,
+    'ToggleAllApps',
+  );
+}
+
+function enableOverlayKeyOverride() {
+  if (state.overlayKeyHandlerId !== 0)
+    return;
+
+  state.originalOverlayHandlerId = GObject.signal_handler_find(
+    global.display,
+    { signalId: 'overlay-key' },
+  );
+
+  if (state.originalOverlayHandlerId !== 0) {
+    global.display.block_signal_handler(state.originalOverlayHandlerId);
+    journal(`Blocked original overlay-key handler (ID: ${state.originalOverlayHandlerId})`);
+  } else {
+    journal('No original overlay-key handler found to block.');
+  }
+
+  state.overlayKeyHandlerId = global.display.connect('overlay-key', onSuperKeyPressed);
+  journal(`Connected custom overlay-key handler (ID: ${state.overlayKeyHandlerId})`);
+}
+
+function disableOverlayKeyOverride() {
+  if (state.overlayKeyHandlerId !== 0) {
+    global.display.disconnect(state.overlayKeyHandlerId);
+    state.overlayKeyHandlerId = 0;
+    journal('Disconnected custom overlay-key handler');
+  }
+
+  if (state.originalOverlayHandlerId !== 0) {
+    global.display.unblock_signal_handler(state.originalOverlayHandlerId);
+    state.originalOverlayHandlerId = 0;
+    journal('Unblocked original overlay-key handler');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Lifecycle.
 // ---------------------------------------------------------------------------
 
 function setup() {
@@ -133,13 +188,11 @@ function setup() {
   state.passthroughAdded = new Set();
   state.focusSignalId = 0;
   state.passthroughChangedIds = [];
+  state.overlayKeyHandlerId = 0;
+  state.originalOverlayHandlerId = 0;
 
-  // Seed defaults before any addKeybinding() call, because addKeybinding()
-  // reads the accelerator from settings.
   seedDefaults();
 
-  // Register every keybinding once. updatePassthroughBindings() at the end
-  // reconciles this initial set against the current focus.
   for (const { key } of KEYBINDINGS) {
     addKeybinding(key);
     state.passthroughAdded.add(key);
@@ -153,9 +206,12 @@ function setup() {
   }
 
   updatePassthroughBindings();
+  enableOverlayKeyOverride();
 }
 
 function teardown() {
+  disableOverlayKeyOverride();
+
   if (state.focusSignalId) {
     global.display.disconnect(state.focusSignalId);
     state.focusSignalId = 0;
@@ -165,7 +221,6 @@ function teardown() {
     state.settings.disconnect(id);
   state.passthroughChangedIds = [];
 
-  // Remove all keybindings (but DO NOT reset settings).
   if (state.bindingsByKey) {
     for (const key of state.bindingsByKey.keys())
       Main.wm.removeKeybinding(key);
@@ -178,19 +233,13 @@ function teardown() {
 
 // ---------------------------------------------------------------------------
 // Extension entry point.
-//
-// This class exists only because GNOME Shell requires an Extension subclass
-// and because enable/disable hooks and the settings object come from it. All
-// the real work is done by the module-level functions above.
 // ---------------------------------------------------------------------------
 
-export default class ExampleExtension extends Extension {
+export default class DefineKeybindingsExtension extends Extension {
   enable() {
     initLogging(this.uuid, 'both', false);
     journal('Enabled');
 
-    // Only getSettings() is reachable from here; stash it on module state
-    // before handing off to setup().
     state.settings = this.getSettings(SETTINGS_SCHEMA);
 
     setup();
