@@ -19,7 +19,7 @@ export const KEYBINDINGS = [
     { key: 'kb-12', accel: '<Super>p', command: 'gnomeutils-call -i tagged TogglePinsFocusedWindow', description: 'Toggle pin on focused window' },
     { key: 'kb-13', accel: '<Super>Tab', command: 'gnomeutils-call -i workspaces ToggleWorkspaces', description: 'Toggle workspaces overview' },
     { key: 'kb-14', accel: 'Print', command: 'gdmenu-screenshot', description: 'Take a screenshot' },
-    { key: 'kb-15', accel: '<Super>w', command: 'gdmenu-activity-overview', description: 'Open activity overview' },
+    { key: 'kb-15', accel: '<Super>w', command: 'dbus-send --print-reply=literal --session --dest=io.github.blueray453.TopNotchWorkspaces /io/github/blueray453/TopNotchWorkspaces/Overlay io.github.blueray453.TopNotchWorkspaces.Overlay.ToggleAllWindows', description: 'Open activity overview' },
     { key: 'kb-16', accel: '<Super>o', command: 'open-file-path', description: 'Open file path', passthroughWmClass: ['VSCodium'] },
     { key: 'kb-17', accel: '<Super>q', command: 'capture2text', description: 'Capture text (OCR)' },
 ];
