@@ -131,7 +131,7 @@ function updatePassthroughBindings() {
 // We block that handler and connect our own, which hides the overview (if
 // visible) and asks TopNotchWorkspaces to toggle its all-windows overlay.
 //
-// Toggle semantics come from the remote side: ToggleAllWindows opens the
+// Toggle semantics come from the remote side: CycleOverlays opens the
 // overlay if nothing's open and closes it if the window overlay is already
 // the current one. So a second Super press dismisses the overlay.
 //
@@ -145,7 +145,7 @@ function onSuperKeyPressed() {
 
   callDBusMethod(
     TOPNOTCH_BUS_NAME, TOPNOTCH_OVERLAY_PATH, TOPNOTCH_OVERLAY_IFACE,
-    'ToggleAllWindows',
+    'CycleOverlays',
   );
 }
 
