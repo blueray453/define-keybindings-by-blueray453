@@ -129,7 +129,11 @@ function updatePassthroughBindings() {
 //
 // GNOME's native overlay-key handler (on global.display) toggles the overview.
 // We block that handler and connect our own, which hides the overview (if
-// visible) and asks TopNotchWorkspaces to toggle its all-apps overlay.
+// visible) and asks TopNotchWorkspaces to toggle its all-windows overlay.
+//
+// Toggle semantics come from the remote side: ToggleAllWindows opens the
+// overlay if nothing's open and closes it if the window overlay is already
+// the current one. So a second Super press dismisses the overlay.
 //
 // No settings involved — the override is active whenever this extension is
 // enabled and restored on disable.
@@ -141,7 +145,7 @@ function onSuperKeyPressed() {
 
   callDBusMethod(
     TOPNOTCH_BUS_NAME, TOPNOTCH_OVERLAY_PATH, TOPNOTCH_OVERLAY_IFACE,
-    'ToggleAllApps',
+    'ToggleAllWindows',
   );
 }
 
