@@ -3,6 +3,13 @@
   <schema id="org.gnome.shell.extensions.keybindings-by-blueray453"
           path="/org/gnome/shell/extensions/keybindings-by-blueray453/">
 
+    <!-- ==================== MIGRATION ==================== -->
+    <key name="keybindings-version" type="i">
+      <default>0</default>
+      <summary>Keybindings data version</summary>
+      <description>Bumped in keybindingsData.js whenever accelerators or default commands change. A stored value lower than the code's KEYBINDINGS_VERSION triggers a one-time reset of every binding to its current default, including passthrough lists and retired slots.</description>
+    </key>
+
     <!-- ==================== ACCELERATOR KEYS ==================== -->
     <key name="kb-1" type="as">
       <default>[]</default>

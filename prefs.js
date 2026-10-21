@@ -3,7 +3,7 @@ import Gdk from 'gi://Gdk';
 import Adw from 'gi://Adw';
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import { KEYBINDINGS } from './keybindingsData.js';
+import { KEYBINDINGS, seedKeybindingDefaults } from './keybindingsData.js';
 
 // ---------------------------------------------------------------------------
 // Module state.
@@ -313,7 +313,17 @@ function buildPage(window) {
 
 export default class DefineKeybindingsPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
-        resetState(this.getSettings());
+        const settings = this.getSettings();
+
+        // Run the same versioned migration the extension performs in
+        // enable(). If KEYBINDINGS_VERSION has moved forward since the
+        // last write, this rewrites every persisted accel + passthrough
+        // before we build the rows, so prefs never shows stale values.
+        // The call is idempotent — if the extension already migrated, this
+        // is a no-op.
+        seedKeybindingDefaults(settings);
+
+        resetState(settings);
         buildPage(window);
     }
 }

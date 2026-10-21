@@ -5,7 +5,7 @@ import GObject from 'gi://GObject';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-import { KEYBINDINGS } from './keybindingsData.js';
+import { KEYBINDINGS, seedKeybindingDefaults } from './keybindingsData.js';
 import { callDBusMethod } from './dbusClient.js';
 import { initLogging, createLogger } from './logger.js';
 
@@ -36,14 +36,8 @@ const state = {
 // ---------------------------------------------------------------------------
 
 function seedDefaults() {
-  for (const { key, accel, passthroughWmClass } of KEYBINDINGS) {
-    if (state.settings.get_strv(key).length === 0)
-      state.settings.set_strv(key, [accel]);
-
-    const pKey = `${key}-passthrough`;
-    if (state.settings.get_strv(pKey).length === 0)
-      state.settings.set_strv(pKey, passthroughWmClass || []);
-  }
+  if (seedKeybindingDefaults(state.settings))
+    journal('Migrated keybinding defaults to current version');
 }
 
 function getPassthroughList(key) {
