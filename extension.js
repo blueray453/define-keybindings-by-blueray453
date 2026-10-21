@@ -244,24 +244,14 @@ export default class DefineKeybindingsExtension extends Extension {
     initLogging(this.uuid, 'both', false);
     journal('Enabled');
 
-    // Hide overview at startup
-    this._idleId = 0;
-
-    this._idleId = GLib.idle_add(GLib.PRIORITY_HIGH, () => {
-      this._idleId = 0;
-      Main.overview.hide();
-      return GLib.SOURCE_REMOVE;
-    });
+    Main.layoutManager.connectObject('startup-complete', () => Main.overview.hide(), this);
 
     state.settings = this.getSettings(SETTINGS_SCHEMA);
     setup();
   }
 
   disable() {
-    if (this._idleId) {
-      GLib.Source.remove(this._idleId);
-      this._idleId = 0;
-    }
+    Main.layoutManager.disconnectObject(this);
     teardown();
     journal('Extension disabled: all cleaned.');
   }
