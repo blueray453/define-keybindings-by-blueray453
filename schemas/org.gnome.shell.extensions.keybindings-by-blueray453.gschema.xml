@@ -1,6 +1,6 @@
 <schemalist>
-  <schema id="org.gnome.shell.extensions.define-keybindings-by-blueray453"
-          path="/org/gnome/shell/extensions/define-keybindings-by-blueray453/">
+  <schema id="org.gnome.shell.extensions.keybindings-by-blueray453"
+          path="/org/gnome/shell/extensions/keybindings-by-blueray453/">
 
     <!-- ==================== ACCELERATOR KEYS ==================== -->
     <key name="kb-1" type="as">

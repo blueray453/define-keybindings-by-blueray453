@@ -11,7 +11,7 @@ import { initLogging, createLogger } from './logger.js';
 
 const journal = createLogger(import.meta.url);
 
-const SETTINGS_SCHEMA = 'org.gnome.shell.extensions.define-keybindings-by-blueray453';
+const SETTINGS_SCHEMA = 'org.gnome.shell.extensions.keybindings-by-blueray453';
 
 // Cross-extension: TopNotchWorkspaces' overlay service.
 const TOPNOTCH_BUS_NAME = 'io.github.blueray453.TopNotchWorkspaces';
