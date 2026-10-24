@@ -238,14 +238,11 @@ export default class DefineKeybindingsExtension extends Extension {
     initLogging(this.uuid, 'both', false);
     journal('Enabled');
 
-    Main.layoutManager.connectObject('startup-complete', () => Main.overview.hide(), this);
-
     state.settings = this.getSettings(SETTINGS_SCHEMA);
     setup();
   }
 
   disable() {
-    Main.layoutManager.disconnectObject(this);
     teardown();
     journal('Extension disabled: all cleaned.');
   }
